@@ -20,9 +20,9 @@ function authenticate(requestBody){
 function getOrder(accessioningId){
     return new Promise((resolve, reject) => {
         // Real API
-        fetch(`${config.url}:${config.api.order}${accessioningId}`, { credentials: 'include' }).then(function(response) {
+        //fetch(`${config.url}:${config.api.order}${accessioningId}`, { credentials: 'include' }).then(function(response) {
         // Mock Json
-        //fetch("app/assets/mock_json/order1.json").then(function(response) {
+        fetch("app/assets/mock_json/order1.json").then(function(response) {
             if (response.status !== 200) {
                 reject(response);
                 }
@@ -42,9 +42,9 @@ function getOrder(accessioningId){
 function getProcessStepResults(accessioningId){
     return new Promise((resolve, reject) => {
         // Real API
-        fetch(`${config.url}:${config.api.processstepresults}${accessioningId}`, { credentials: 'include' }).then(function(response) {
+        //fetch(`${config.url}:${config.api.processstepresults}${accessioningId}`, { credentials: 'include' }).then(function(response) {
         // Mock Json
-        //fetch("app/assets/mock_json/processstepresults0.json").then(function(response) {
+        fetch("app/assets/mock_json/processstepresults0.json").then(function(response) {
             if (response.status !== 200) {
                 reject(response);
                 }
