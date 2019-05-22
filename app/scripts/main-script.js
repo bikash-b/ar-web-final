@@ -1,6 +1,8 @@
     // Authenticate to server.
-    //lonOnToServer();
+    // Comment for enabling/disabling the Authentication check. 
     //checkAuth();
+
+    // Comment main() if you want login.html as the default page for Authentication check.
     main();
 
     // this.markerList = getMarkers(2)
@@ -9,7 +11,7 @@
     function main(){
       $(document).ready(function(){
         let scene =  $('a-scene')[0];
-        let markers = getMarkersFromRange(1000, 1012);
+        let markers = getMarkersFromRange(config.markerRange.from, config.markerRange.to);
         markers.filter(mker => { 
           scene.append(getMarkerObject(mker.id));
         });
@@ -41,13 +43,14 @@
       marker.setAttribute("value", value);
       marker.setAttribute("id", value);
       marker.setAttribute("color", '#000000');
+      marker.setAttribute("camera", 'far:200000000; near:0.01');
       //marker.setAttribute("registerevents");
 
       marker.addEventListener('markerFound', function() {
         console.log('markerFound', marker.id);
         //console.log("Marker", $(`#${marker.id}`));
         //fetchOrderAndDisplayContent(marker.id);
-        displayPlane(marker.id);
+        fetchAndDisplayContent(marker.id);
       });
 
       return marker;
@@ -91,50 +94,73 @@
       }
     });
 
-    function displayPlane(id){
-      var markerElement = document.getElementById(id);
+    function get2DPlane(id, order, processStepResult){
+      //var markerElement = document.getElementById(id);
       let plane = getPlane(id);
 
-      var image1 = document.createElement('a-image');
-      image1.setAttribute('position', '-0.16 0.35 0');
-      image1.setAttribute('src', 'app/assets/images/Roche2.png'); 
-      image1.setAttribute('height', '0.2'); 
-      image1.setAttribute('width', '0.3'); 
+      var logo = document.createElement('a-image');
+      logo.setAttribute('position', '-0.16 0.35 0');
+      logo.setAttribute('src', 'app/assets/images/Roche2.png'); 
+      logo.setAttribute('height', '0.2'); 
+      logo.setAttribute('width', '0.3'); 
 
-      let entity1 = document.createElement('a-entity');
-      entity1.setAttribute('position', '0.7 0.2 0');
-      entity1.setAttribute('text', `font: mozillavr; value: 1002; width: 2; color: #000000`);
+      let accessioningId = document.createElement('a-entity');
+      accessioningId.setAttribute('position', '0.7 0.2 0');
+      accessioningId.setAttribute('text', `font: mozillavr; value: ${id}; width: 2; color: #000000`);
       
-      let entity2 = document.createElement('a-entity');
-      entity2.setAttribute('position', '0.7 0.05 0');
-      entity2.setAttribute('text', `font: mozillavr; value: NIPT; width: 2; color: #000000`);
+      let assayType = document.createElement('a-entity');
+      assayType.setAttribute('position', '0.7 0.05 0');
+      assayType.setAttribute('text', `font: mozillavr; value: ${order.assayType}; width: 2; color: #000000`);
 
-      let entity3 = document.createElement('a-entity');
-      entity3.setAttribute('position', '0.45 -0.1 0');
-      entity3.setAttribute('text', `font: mozillavr; value: LP Post PCR/Pooling; width: 1.5; color: #000000`);
+      let processStepName = document.createElement('a-entity');
+      processStepName.setAttribute('position', '0.45 -0.1 0');
+      processStepName.setAttribute('text', `font: mozillavr; value: ${processStepResult.processStepName}; width: 1.5; color: #000000`);
 
-      var image2 = document.createElement('a-image');
-      image2.setAttribute('position', '-0.18 -0.35 0');
-      image2.setAttribute('src', 'app/assets/images/completed.png'); 
-      image2.setAttribute('height', '0.28'); 
-      image2.setAttribute('width', '0.28'); 
+      var status = document.createElement('a-image');
+      status.setAttribute('position', '-0.18 -0.35 0');
+      status.setAttribute('src', `app/assets/images/${processStepResult.runStatus.toLowerCase()}.png`); 
+      status.setAttribute('height', '0.28'); 
+      status.setAttribute('width', '0.28'); 
 
-      plane.appendChild(image1);
-      plane.appendChild(entity1);
-      plane.appendChild(entity2);
-      plane.appendChild(entity3);
-      plane.appendChild(image2);
+      plane.appendChild(logo);
+      plane.appendChild(accessioningId);
+      plane.appendChild(assayType);
+      plane.appendChild(processStepName);
+      plane.appendChild(status);
     
-      markerElement.appendChild(plane);
+      return plane;
+      //markerElement.appendChild(plane);
     }
 
     function getPlane(id){
       var plane = document.createElement('a-plane');
       plane.setAttribute('color', '#FFF');
       plane.setAttribute('height', '1');
-      plane.setAttribute('width', '0.7');
-      plane.setAttribute('rotation', '-90 0 0'); 
+      plane.setAttribute('width', '1');
+      plane.setAttribute('rotation', '-90 0 0');
       return plane;
+    }
+
+    function fetchAndDisplayContent(id){
+      var markerElement = document.getElementById(id);
+      console.log(markerElement);
+      getOrder(id).then(order => {
+        getProcessStepResults(id).then(processStepResults => {
+          if(processStepResults){
+            // let latestProcessStepResult = processStepResults.sort(function(a,b) { 
+            //   return new Date(b.runCompletionTime).getTime() - new Date(a.runCompletionTime).getTime() 
+            // })[0];
+            let latestProcessStepResult = processStepResults[0]
+
+            let contentToDisplay = get2DPlane(id, order[0], latestProcessStepResult);
+            markerElement.appendChild(contentToDisplay);
+          }
+        }, error => {
+          alert("Error Occurred");
+        });
+      }, error => {
+        alert("Error Occurred");
+      });
     }
 
     function fetchOrderAndDisplayContent(id){
