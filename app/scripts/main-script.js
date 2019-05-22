@@ -11,7 +11,7 @@
     function main(){
       $(document).ready(function(){
         let scene =  $('a-scene')[0];
-        let markers = getMarkersFromRange(config.markerRange.from, config.markerRange.to);
+        let markers = getMarkersFromRange(1000, 1012);
         markers.filter(mker => { 
           scene.append(getMarkerObject(mker.id));
         });
